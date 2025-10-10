@@ -153,7 +153,6 @@ class Tracking(torch.nn.Module):
 
       # Convert a pytorch tensor to either a cupy or numpy array,
       # depending on which device
-      # make lat and lon arrays C contiguous
       if not torch.cuda.is_available() or str(self.config.device) == "cpu":
           np = numpy
           lat_crop = np.asarray(t_lat_crop.detach().cpu().numpy())
@@ -166,6 +165,7 @@ class Tracking(torch.nn.Module):
       lon = np.tile(lon_crop, (lat_crop.shape[0], 1))
       lat_2d = np.tile(lat_crop, (len(lon_crop), 1))
       lat = np.rot90(lat_2d, 3)
+      # make lat and lon arrays C contiguous
       self.config.lat = np.ascontiguousarray(lat, dtype=np.float32)
       self.config.lon = np.ascontiguousarray(lon, dtype=np.float32)
 
