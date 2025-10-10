@@ -1,6 +1,6 @@
 # African Easterly Waves Tracking
 
-This example show how to run the AEW tracker using a typical **Earth2Studio** workflow.
+This example show how to run the AEW tracker using **Earth2Studio**.
 
 ## ARCO data source
 
