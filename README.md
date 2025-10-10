@@ -1,6 +1,6 @@
 # African Easterly Waves Tracking
 
-This example show how to run the AEW tracker using **Earth2Studio**.
+This example shows how to run the AEW tracker using **Earth2Studio**.
 
 The C smoothing program needs to be compiled before running the AEW tracker, and the execution file path needs to be updated in Tracking_functions.py.
 
