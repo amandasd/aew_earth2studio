@@ -2,7 +2,7 @@
 
 This example shows how to run the AEW tracker using **Earth2Studio**.
 
-The C smoothing program needs to be compiled before running the AEW tracker, and the execution file path needs to be updated in Tracking_functions.py.
+The C smoothing program needs to be compiled before running AEW tracker, and the execution file path needs to be updated in Tracking_functions.py.
 
 ```
 cc -shared -Wl,-soname,C_circle_functions -o C_circle_functions.so -fPIC C_circle_functions.c
