@@ -478,7 +478,7 @@ class Tracking(torch.nn.Module):
                                       self._next_time.item().day,
                                       self._next_time.item().hour,
                                       self._next_time.item().minute,
-                                      new_latlon_pair[0], lat_lon_pair[1],
+                                      new_latlon_pair[0], new_latlon_pair[1],
                                       np.nan, True])
               else:
                  # make sure that the next time step is actually within our timeframe
