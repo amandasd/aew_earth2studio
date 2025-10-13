@@ -448,7 +448,6 @@ def filter_tracks(common_object,latlon_list,magnitude_list):
 	if len(latlon_list) > 4 and (latlon_list[-2][1] - latlon_list[-1][1] < 0) and\
 	(latlon_list[-3][1] - latlon_list[-2][1] < 0) and (latlon_list[-4][1] - latlon_list[-3][1] < 0) and\
 	(latlon_list[-5][1] - latlon_list[-4][1] < 0):
-		print(latlon_list)
 		filter_result_object.reject_track_direction = True
 	else:
 		filter_result_object.reject_track_direction = False
