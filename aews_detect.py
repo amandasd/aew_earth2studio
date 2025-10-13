@@ -141,16 +141,6 @@ class Tracking(torch.nn.Module):
       self.config.lon_index_west = torch.argmin(torch.abs(t_lon_crop - self.west_lon)).item()
       self.config.lon_index_east = torch.argmin(torch.abs(t_lon_crop - self.east_lon)).item()
 
-      # make the lat and lon arrays from the GCM 2D (ordered lat, lon)
-      #lon = t_lon_crop.repeat(t_lat_crop.shape[0], 1)
-      #lat_2d = t_lat_crop.repeat(len(t_lon_crop), 1)
-      #lat = torch.rot90(lat_2d, k=3, dims=(0, 1))
-      # switch lat and lon arrays to float32 instead of float64
-      # make lat and lon arrays C contiguous
-      #lat = lat.to(dtype=torch.float32).contiguous()
-      #lon = lon.to(dtype=torch.float32).contiguous()
-      #self.config.total_lon_degrees = torch.abs(lon[0,0] - lon[0,-1])
-
       # Convert a pytorch tensor to either a cupy or numpy array,
       # depending on which device
       if not torch.cuda.is_available() or str(self.config.device) == "cpu":
