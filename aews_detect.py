@@ -411,8 +411,8 @@ class Tracking(torch.nn.Module):
 
           # for the locations in combined_unique_max_locs
           # (assuming it isn't empty), create new AEW tracks.
+          new_tracks = []
           if combined_unique_max_locs:
-             new_tracks = []
              for lat_lon_pair in combined_unique_max_locs:
                  new_tracks.append([
                   self._current_time.item().year, self._current_time.item().month,
@@ -420,15 +420,21 @@ class Tracking(torch.nn.Module):
                   self._current_time.item().minute,
                   lat_lon_pair[0], lat_lon_pair[1], np.nan, True])
 
-          new_tracks_reshaped = torch.tensor(new_tracks, dtype=torch.float32).unsqueeze(1)
+          tracks_list = []
           if self.path_buffer.numel() != 0:
-             new_tracks_padded = torch.cat([torch.full((len(new_tracks), self.path_buffer[i].size(1)-1, 9), float('nan')), new_tracks_reshaped], dim=1)
-             # Append the new and old tracks to tracks_list.
-             # The tracks from the previous times are in self.path_buffer
-             tracks_list = torch.cat((self.path_buffer[i], new_tracks_padded.detach().cpu()), dim=0)
+             if new_tracks:
+                new_tracks_reshaped = torch.tensor(new_tracks, dtype=torch.float32).unsqueeze(1)
+                new_tracks_padded = torch.cat([torch.full((len(new_tracks), self.path_buffer[i].size(1)-1, 9), float('nan')), new_tracks_reshaped], dim=1)
+                # Append the new and old tracks to tracks_list.
+                # The tracks from the previous times are in self.path_buffer
+                tracks_list = torch.cat((self.path_buffer[i], new_tracks_padded.detach().cpu()), dim=0)
+             else:
+                tracks_list = self.path_buffer[i]
           else:
-             tracks_list = new_tracks_reshaped
-
+             if new_tracks:
+                new_tracks_reshaped = torch.tensor(new_tracks, dtype=torch.float32).unsqueeze(1)
+                tracks_list = new_tracks_reshaped
+                 
           # loop through all tracks and assign magnitudes to the new lat/lon pairs
           # that have been added to each track.
           # Then filter out any tracks that don't meet AEW qualifications and
