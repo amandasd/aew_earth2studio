@@ -1,0 +1,15 @@
+[project]
+name = "aew-earth2studio"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "cupy-cuda11x>=13.6.0",
+    "earth2studio",
+    "ipykernel>=7.0.0",
+    "scikit-image>=0.25.2",
+]
+
+[tool.uv.sources]
+earth2studio = { git = "https://github.com/NVIDIA/earth2studio.git", rev = "0.9.0" }

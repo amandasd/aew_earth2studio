@@ -2,8 +2,12 @@
 
 This example shows how to run the AEW tracker using **Earth2Studio**.
 
-The C smoothing program needs to be compiled before running AEW tracker, and the execution file path needs to be updated in Tracking_functions.py.
+## Getting started
 
+1. Clone this repository
+1. Install [astral uv](https://github.com/astral-sh/uv) if you have not done so previously
+1. Update the `uv` environment for this directory: `uv sync`, which will also install `earth2studio`
+1. Compile the helper code
 ```
 cc -shared -Wl,-soname,C_circle_functions -o C_circle_functions.so -fPIC C_circle_functions.c
 ```

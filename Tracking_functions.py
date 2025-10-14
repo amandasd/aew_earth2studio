@@ -36,7 +36,7 @@ def c_smooth(common_object,var,radius):
 	# This will be what gets smoothed and returned.
 	smoothed_var = np.copy(var)
 	# load in the C program C_circle_functions
-	c_circle_avg_m = ctypes.CDLL('/pscratch/sd/a/asdufek/envs/earth2studio-env-v9/lib/python3.12/site-packages/earth2studio/models/dx/C_circle_functions.so').circle_avg_m
+	c_circle_avg_m = ctypes.CDLL('./C_circle_functions.so').circle_avg_m
 	# set the types of all of the variables so C understands
 	# what's coming into the function (e.g. an int will be ctypes.c_int)
 	c_circle_avg_m.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_int, ctl.ndpointer(np.float32,flags='aligned, c_contiguous'), ctl.ndpointer(np.float32,flags='aligned, c_contiguous'), ctl.ndpointer(np.float32,flags='aligned, c_contiguous'), ctypes.c_float, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_float]
