@@ -304,11 +304,11 @@ def unique_track_locations(device, current_latlon_pair,combined_unique_max_locs,
 		# from the combined_unique_max_locs list, and continue to the next pair.
 		if dist_km < radius:
 #			print(latlon_loc)
-#			print(track_object.latlon_list)
+#			print(new_latlon_pair)
 			new_latlon_pair = ((latlon_loc[0]+current_latlon_pair[0])/2,(latlon_loc[1]+current_latlon_pair[1])/2)
-#			print(track_object.latlon_list)
+#			print(new_latlon_pair)
 			combined_unique_max_locs.remove(latlon_loc) # remove the lat/lon pair from the list
-			continue
+			break
 	return new_latlon_pair
 
 # This function takes the curvature vorticity at 850 and 600 hPa and the relative vorticity at 700 and 600 hPa
