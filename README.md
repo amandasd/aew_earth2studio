@@ -29,7 +29,7 @@ tracker = tracker.to(device)
 tracker.detect._device = device
 tracker.detect.reset_path_buffer()
 
-start_time = datetime(2010, 8, 1)  # Start date
+start_time = datetime(2010, 10, 1)  # Start date
 nsteps = 20  # Number of steps to run the tracker for into future
 times = [start_time + timedelta(hours=6 * i) for i in range(nsteps+1)]
 
