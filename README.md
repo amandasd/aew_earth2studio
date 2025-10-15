@@ -49,3 +49,38 @@ for step, time in enumerate(times):
 
 out, out_coords = tracker.filter(output, output_coords)
 ```
+
+## Plotting the tracks
+
+```python
+import matplotlib.pyplot as plt
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+
+tracks = out.cpu()
+paths = tracks.numpy()
+
+fig,ax = plt.subplots(ncols=1, figsize=(15,10), subplot_kw={'projection':ccrs.PlateCarree()})
+ax.tick_params(axis='both', which='major', labelsize=14)
+
+ax.add_feature(cfeature.BORDERS, linestyle='-', edgecolor='black', linewidth=0.8)
+ax.add_feature(cfeature.COASTLINE, linestyle='-', edgecolor='black', linewidth=0.8)
+
+# Add gridlines with labels
+gl = ax.gridlines(draw_labels=True, linestyle='--', linewidth=0.5, color='gray')
+gl.top_labels = False
+gl.right_labels = False
+gl.xlabel_style = {'size': 10, 'color': 'black'}
+gl.ylabel_style = {'size': 10, 'color': 'black'}
+
+for path in range(paths.shape[1]):
+    # Get lat/lon coordinates, filtering out nans
+    lats = paths[0, path, :, 5]
+    lons = paths[0, path, :, 6]
+    mask = ~np.isnan(lats) & ~np.isnan(lons)
+    if mask.any() and len(lons[mask]) > 2:
+        ax.scatter(lons[mask], lats[mask], marker="o", s=1)
+
+fig.savefig('earth2studio_aew_tracks.png', dpi=300, facecolor='w', edgecolor='w', orientation='portrait', bbox_inches='tight')
+plt.close(fig)
+```
