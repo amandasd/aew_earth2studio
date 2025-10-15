@@ -79,7 +79,7 @@ for path in range(paths.shape[1]):
     lons = paths[0, path, :, 6]
     mask = ~np.isnan(lats) & ~np.isnan(lons)
     if mask.any() and len(lons[mask]) > 2:
-        ax.scatter(lons[mask], lats[mask], marker="o", s=1)
+        ax.scatter(lons[mask], lats[mask], marker="o", s=10)
 
 fig.savefig('earth2studio_aew_tracks.png', dpi=300, facecolor='w', edgecolor='w', orientation='portrait', bbox_inches='tight')
 plt.close(fig)
