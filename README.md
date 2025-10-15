@@ -84,3 +84,6 @@ for path in range(paths.shape[1]):
 fig.savefig('earth2studio_aew_tracks.png', dpi=300, facecolor='w', edgecolor='w', orientation='portrait', bbox_inches='tight')
 plt.close(fig)
 ```
+## AEW Tracks — September 1 to October 31, 2010
+<img width="3673" height="1008" alt="earth2studio_aew_tracks" src="https://github.com/user-attachments/assets/241219f5-bce7-40fc-9183-86fce2b2f5ae" />
+
