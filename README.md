@@ -70,13 +70,13 @@ ax.add_feature(cfeature.COASTLINE, linestyle='-', edgecolor='black', linewidth=0
 gl = ax.gridlines(draw_labels=True, linestyle='--', linewidth=0.5, color='gray')
 gl.top_labels = False
 gl.right_labels = False
-gl.xlabel_style = {'size': 10, 'color': 'black'}
-gl.ylabel_style = {'size': 10, 'color': 'black'}
+gl.xlabel_style = {'size':10, 'color':'black'}
+gl.ylabel_style = {'size':10, 'color':'black'}
 
 for path in range(paths.shape[1]):
     # Get lat/lon coordinates, filtering out nans
-    lats = paths[0, path, :, 5]
-    lons = paths[0, path, :, 6]
+    lats = paths[0,path,:,5]
+    lons = paths[0,path,:,6]
     mask = ~np.isnan(lats) & ~np.isnan(lons)
     if mask.any() and len(lons[mask]) > 2:
         ax.scatter(lons[mask], lats[mask], marker="o", s=10)
