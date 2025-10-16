@@ -120,7 +120,8 @@ def get_mass_center(common_object,var,max_indices): #,lat_index_south,lon_index_
 		max_lon_index_minus_delta = (np.abs(common_object.lon[0,:] - (max_lon-delta))).argmin()
 		
 		# create a cropped version of the variable array, lat and lon arrays using the delta modified lat/lon indices above
-		var_crop = var[max_lat_index_minus_delta:max_lat_index_plus_delta,max_lon_index_minus_delta:max_lon_index_plus_delta]
+		#TODO: check
+		var_crop = var[max_lat_index_minus_delta:max_lat_index_plus_delta,max_lon_index_minus_delta:max_lon_index_plus_delta].copy()
 		lat_crop = common_object.lat[max_lat_index_minus_delta:max_lat_index_plus_delta,max_lon_index_minus_delta:max_lon_index_plus_delta]
 		lon_crop = common_object.lon[max_lat_index_minus_delta:max_lat_index_plus_delta,max_lon_index_minus_delta:max_lon_index_plus_delta]
 #		print(lat_crop)
