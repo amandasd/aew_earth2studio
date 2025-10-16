@@ -405,7 +405,7 @@ class Tracking(torch.nn.Module):
                     track_lon = self.path_buffer[i,track,-1,6]
                     # check to make sure that the new track locations aren't
                     # duplicates of existing tracks
-                    #TODO: check the loop in unique_track_locations
+                    #TODO: check unique_track_locations
                     new_latlon_pair = unique_track_locations("cpu", (track_lat,track_lon), combined_unique_max_locs, self.config.radius)
                     self.path_buffer[i,track,-1,5] = new_latlon_pair[0]
                     self.path_buffer[i,track,-1,6] = new_latlon_pair[1]
