@@ -4,6 +4,7 @@ from scipy.spatial import cKDTree
 from collections.abc import Iterable
 from cupyx.scipy import ndimage as ndi
 import ctypes
+import os
 import numpy.ctypeslib as ctl
 import torch
 import numpy
@@ -36,7 +37,7 @@ def c_smooth(common_object,var,radius):
 	# This will be what gets smoothed and returned.
 	smoothed_var = np.copy(var)
 	# load in the C program C_circle_functions
-	c_circle_avg_m = ctypes.CDLL('./C_circle_functions.so').circle_avg_m
+	c_circle_avg_m = ctypes.CDLL(os.path.join(os.path.dirname(__file__), 'C_circle_functions.so')).circle_avg_m
 	# set the types of all of the variables so C understands
 	# what's coming into the function (e.g. an int will be ctypes.c_int)
 	c_circle_avg_m.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_int, ctl.ndpointer(np.float32,flags='aligned, c_contiguous'), ctl.ndpointer(np.float32,flags='aligned, c_contiguous'), ctl.ndpointer(np.float32,flags='aligned, c_contiguous'), ctypes.c_float, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_float]
