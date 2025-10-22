@@ -57,8 +57,8 @@ import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 
-tracks = out.cpu()
-paths = tracks.numpy()
+aew_tracks = out.cpu()
+paths = aew_tracks.numpy()
 
 fig,ax = plt.subplots(ncols=1, figsize=(15,10), subplot_kw={'projection':ccrs.PlateCarree()})
 ax.tick_params(axis='both', which='major', labelsize=14)
