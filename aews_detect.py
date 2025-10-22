@@ -10,7 +10,7 @@ if torch.cuda.is_available():
     import cupy
 np = numpy
 
-from Tracking_functions import *
+from .Tracking_functions import *
 
 # Common info class.
 # Each instance/object of Common_track_data is an object that holds
