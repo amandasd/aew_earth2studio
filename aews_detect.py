@@ -394,7 +394,7 @@ class Tracking(torch.nn.Module):
           # existing track, and remove the duplicate lat/lon location from
           # combined_unique_max_locs.
           # only enter if path_buffer isn't empty
-          if self.path_buffer.numel() != 0:
+          if self.path_buffer.numel() != 0 and combined_unique_max_locs:
              for track in range(self.path_buffer[i].size(0)):
                  # check the tracking status
                  # (false means finished track because of weak magnitude, i.e.
@@ -403,12 +403,15 @@ class Tracking(torch.nn.Module):
                     # get the last lat/lon location
                     track_lat = self.path_buffer[i,track,-1,5]
                     track_lon = self.path_buffer[i,track,-1,6]
-                    # check to make sure that the new track locations aren't
-                    # duplicates of existing tracks
-                    #TODO: check unique_track_locations
-                    new_latlon_pair = unique_track_locations("cpu", (track_lat,track_lon), combined_unique_max_locs, self.config.radius)
-                    self.path_buffer[i,track,-1,5] = new_latlon_pair[0]
-                    self.path_buffer[i,track,-1,6] = new_latlon_pair[1]
+                    if combined_unique_max_locs:
+                       # check to make sure that the new track locations aren't
+                       # duplicates of existing tracks
+                       #TODO: check unique_track_locations
+                       new_latlon_pair = unique_track_locations("cpu", (track_lat,track_lon), combined_unique_max_locs, self.config.radius)
+                       self.path_buffer[i,track,-1,5] = new_latlon_pair[0]
+                       self.path_buffer[i,track,-1,6] = new_latlon_pair[1]
+                    else:
+                       break
 
           # for the locations in combined_unique_max_locs
           # (assuming it isn't empty), create new AEW tracks.
