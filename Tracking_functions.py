@@ -295,22 +295,19 @@ def unique_locations(device,max_locations,radius,unique_loc_number):
 # make sure no duplicate track objects are created by weeding out possible track locations that are already represented in 
 # existing tracks. This function doesn't return anything, it just modifies the existing track object and lat/lon list.
 def unique_track_locations(device, current_latlon_pair,combined_unique_max_locs,radius):
-	# loop through the lat/lon locations in the combined_unique_max_locs list
-#	print(combined_unique_max_locs)
 	new_latlon_pair = current_latlon_pair
+	dist_km = []
+	# loop through the lat/lon locations in the combined_unique_max_locs list	
 	for latlon_loc in list(combined_unique_max_locs):
 		# get the distance between the track object's lat/lon and the lat/lon pair from the list
 		dist_km = great_circle_dist_km(device, current_latlon_pair[1], current_latlon_pair[0], latlon_loc[1], latlon_loc[0])
-		# check and see if the distance is less than the radius. If it is, replace the track_object lat/lon pair with
-		# the average of the existing track_object lat/lon pair and the newly found lat/lon pair, remove the new pair
-		# from the combined_unique_max_locs list, and continue to the next pair.
-		if dist_km < radius:
-#			print(latlon_loc)
-#			print(new_latlon_pair)
-			new_latlon_pair = ((latlon_loc[0]+current_latlon_pair[0])/2,(latlon_loc[1]+current_latlon_pair[1])/2)
-#			print(new_latlon_pair)
-			combined_unique_max_locs.remove(latlon_loc) # remove the lat/lon pair from the list
-			break
+	# check and see if the distance is less than the radius. If it is, replace the track_object lat/lon pair with
+	# the average of the existing track_object lat/lon pair and the newly found lat/lon pair, remove the new pair
+	# from the combined_unique_max_locs list, and continue to the next pair.
+	if min(dist_km) < radius:
+		idx = dist_km.index(min(dist_km))
+		new_latlon_pair = ((combined_unique_max_locs[idx][0]+current_latlon_pair[0])/2,(combined_unique_max_locs[idx][1]+current_latlon_pair[1])/2)
+		combined_unique_max_locs.pop(idx)
 	return new_latlon_pair
 
 # This function takes the curvature vorticity at 850 and 600 hPa and the relative vorticity at 700 and 600 hPa
