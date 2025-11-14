@@ -12,8 +12,6 @@ np = numpy
 
 from .Tracking_functions import *
 
-import time
-
 # Common info class.
 # Each instance/object of Common_track_data is an object that holds
 # the latitude and longitude arrays, the lat and lon indices for the
