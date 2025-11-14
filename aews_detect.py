@@ -12,6 +12,8 @@ np = numpy
 
 from .Tracking_functions import *
 
+import time
+
 # Common info class.
 # Each instance/object of Common_track_data is an object that holds
 # the latitude and longitude arrays, the lat and lon indices for the
@@ -21,6 +23,7 @@ class Common_track_data:
    def __init__(self):
       self.lat = None
       self.lon = None
+      self.lat_gpu = None
       self.dlat = None
       self.dlon = None
       self.lat_index_north = None
@@ -141,16 +144,19 @@ class Tracking(torch.nn.Module):
       self.config.lon_index_west = torch.argmin(torch.abs(t_lon_crop - self.west_lon)).item()
       self.config.lon_index_east = torch.argmin(torch.abs(t_lon_crop - self.east_lon)).item()
 
-      # Convert a pytorch tensor to either a cupy or numpy array,
-      # depending on which device
-      if not torch.cuda.is_available() or str(self.config.device) == "cpu":
-          np = numpy
-          lat_crop = np.asarray(t_lat_crop.detach().cpu().numpy())
-          lon_crop = np.asarray(t_lon_crop.detach().cpu().numpy())
-      else:
+      if torch.cuda.is_available() and str(self.config.device) != "cpu":
           np = cupy
           lat_crop = cupy.asarray(t_lat_crop.detach())
           lon_crop = cupy.asarray(t_lon_crop.detach())
+          # make the lat and lon arrays from the GCM 2D (ordered lat, lon)
+          lat_2d = np.tile(lat_crop, (len(lon_crop), 1))
+          lat = np.rot90(lat_2d, 3)
+          # make lat arrays C contiguous
+          self.config.lat_gpu = np.ascontiguousarray(lat, dtype=np.float32)
+
+      np = numpy
+      lat_crop = np.asarray(t_lat_crop.detach().cpu().numpy())
+      lon_crop = np.asarray(t_lon_crop.detach().cpu().numpy())
       # make the lat and lon arrays from the GCM 2D (ordered lat, lon)
       lon = np.tile(lon_crop, (lat_crop.shape[0], 1))
       lat_2d = np.tile(lat_crop, (len(lon_crop), 1))
@@ -225,7 +231,6 @@ class Tracking(torch.nn.Module):
 
       # calculate dx by multiplying dlat by the radius of the Earth, 6367500m,
       # and the cos of the lat
-      #TODO: dlat?
       dx = 6367500.0 * torch.cos(torch.deg2rad(lat)) * self.config.dlon
       # calculate dy by multiplying dlat by the radius of the Earth, 6367500m
       dy = 6367500.0 * self.config.dlat
@@ -300,11 +305,9 @@ class Tracking(torch.nn.Module):
       """
       # get the device to run on
       if not torch.cuda.is_available() or str(self._device) == "cpu":
-          np = numpy
           use_gpu = False
           self.config.device = torch.device("cpu")
       else:
-          np = cupy
           use_gpu = True
           self.config.device = torch.device(self._device)
 
@@ -326,7 +329,7 @@ class Tracking(torch.nn.Module):
           t_rel_vort_700 = self.calc_rel_vort(t_u700, t_v700)
           t_rel_vort_600 = self.calc_rel_vort(t_u600, t_v600)
           t_rel_vort = torch.stack([t_rel_vort_850, t_rel_vort_700, t_rel_vort_600], dim=0)
-          # calculate the curvature vorticity
+          # calculate the curvature voriticty
           t_curve_vort_850 = self.calc_curve_vort(t_u850, t_v850, t_rel_vort_850)
           t_curve_vort_700 = self.calc_curve_vort(t_u700, t_v700, t_rel_vort_700)
           t_curve_vort_600 = self.calc_curve_vort(t_u600, t_v600, t_rel_vort_600)
@@ -353,8 +356,6 @@ class Tracking(torch.nn.Module):
           curve_vort_smooth = c_smooth(self.config, curve_vort, self.config.radius*1.5)
           rel_vort_smooth = c_smooth(self.config, rel_vort, self.config.radius*1.5)
           # Convert a cupy or numpy array to a pytorch tensor
-          t_curve_vort_smooth = torch.tensor(curve_vort_smooth, dtype=torch.float32, device=str(self._device))
-          t_rel_vort_smooth = torch.tensor(rel_vort_smooth, dtype=torch.float32, device=str(self._device))
 
           # Find new starting points
           # This function takes the curvature vorticity at 700 hPa
@@ -365,7 +366,6 @@ class Tracking(torch.nn.Module):
           # and the relative vorticity at 700 and 600 hPa.
           # Curvature vorticity at 700 hPa was already looked at in get_starting_targets.
           # Relative vorticity at 850 hPat was not included in the Albany program.
-          #TODO: radius is 350km in unique_locations function?
           alternative_unique_max_locs = get_multi_positions(self.config, curve_vort_smooth, rel_vort_smooth, unique_max_locs)
 
           np = numpy
@@ -381,7 +381,7 @@ class Tracking(torch.nn.Module):
           # Use the following conditional to catch the case where there is
           # only one location, in which case we don't need to use unique_locations.
           if len(unique_max_locs + alternative_unique_max_locs) > 1:
-             combined_unique_max_locs = unique_locations("cpu", unique_max_locs + alternative_unique_max_locs, self.config.radius, 99999999)
+             combined_unique_max_locs = unique_locations(unique_max_locs + alternative_unique_max_locs, self.config.radius, 99999999)
           else:
              combined_unique_max_locs = unique_max_locs + alternative_unique_max_locs
 
@@ -403,11 +403,10 @@ class Tracking(torch.nn.Module):
                     # get the last lat/lon location
                     track_lat = self.path_buffer[i,track,-1,5]
                     track_lon = self.path_buffer[i,track,-1,6]
+                    # check to make sure that the new track locations aren't
+                    # duplicates of existing tracks
                     if combined_unique_max_locs:
-                       # check to make sure that the new track locations aren't
-                       # duplicates of existing tracks
-                       #TODO: check unique_track_locations
-                       new_latlon_pair = unique_track_locations("cpu", (track_lat,track_lon), combined_unique_max_locs, self.config.radius)
+                       new_latlon_pair = unique_track_locations((track_lat,track_lon), combined_unique_max_locs, self.config.radius)
                        self.path_buffer[i,track,-1,5] = new_latlon_pair[0]
                        self.path_buffer[i,track,-1,6] = new_latlon_pair[1]
                     else:
@@ -438,7 +437,7 @@ class Tracking(torch.nn.Module):
              if new_tracks:
                 new_tracks_reshaped = torch.tensor(new_tracks, dtype=torch.float32).unsqueeze(1)
                 tracks_list = new_tracks_reshaped
-                 
+
           # loop through all tracks and assign magnitudes to the new lat/lon pairs
           # that have been added to each track.
           # Then filter out any tracks that don't meet AEW qualifications and
@@ -458,7 +457,7 @@ class Tracking(torch.nn.Module):
                     # The magnitude is whatever is largest among
                     # curvature vorticity at 850, 700 and 600 hPa and
                     # relative voriticy at 700 and 600 hPa
-                    tracks_list[track,-1,7] = assign_magnitude(self.config, t_curve_vort_smooth, t_rel_vort_smooth, (track_lat,track_lon))
+                    tracks_list[track,-1,7] = assign_magnitude(self.config, curve_vort_smooth, rel_vort_smooth, (track_lat,track_lon))
                  # Keep only time steps where lat is not nan
                  valid_idx = torch.where(~torch.isnan(tracks_list[track,:,5]))[0]
                  # Filter tracks. A track is either removed entirely or
@@ -674,5 +673,3 @@ class aews_detect(torch.nn.Module):
 
       self.detect = Tracking(self.config)
       self.filter = Filtering(self.config)
-
-
