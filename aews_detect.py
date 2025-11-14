@@ -327,7 +327,7 @@ class Tracking(torch.nn.Module):
           t_rel_vort_700 = self.calc_rel_vort(t_u700, t_v700)
           t_rel_vort_600 = self.calc_rel_vort(t_u600, t_v600)
           t_rel_vort = torch.stack([t_rel_vort_850, t_rel_vort_700, t_rel_vort_600], dim=0)
-          # calculate the curvature voriticty
+          # calculate the curvature vorticity
           t_curve_vort_850 = self.calc_curve_vort(t_u850, t_v850, t_rel_vort_850)
           t_curve_vort_700 = self.calc_curve_vort(t_u700, t_v700, t_rel_vort_700)
           t_curve_vort_600 = self.calc_curve_vort(t_u600, t_v600, t_rel_vort_600)
@@ -454,7 +454,7 @@ class Tracking(torch.nn.Module):
                     # Assign magnitude from the vorticity to each lat/lon point.
                     # The magnitude is whatever is largest among
                     # curvature vorticity at 850, 700 and 600 hPa and
-                    # relative voriticy at 700 and 600 hPa
+                    # relative vorticity at 700 and 600 hPa
                     tracks_list[track,-1,7] = assign_magnitude(self.config, curve_vort_smooth, rel_vort_smooth, (track_lat,track_lon))
                  # Keep only time steps where lat is not nan
                  valid_idx = torch.where(~torch.isnan(tracks_list[track,:,5]))[0]
