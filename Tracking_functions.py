@@ -6,7 +6,6 @@ import os
 import numpy.ctypeslib as ctl
 import torch
 import numpy
-import time
 
 if torch.cuda.is_available():
     import cupy
