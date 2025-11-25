@@ -109,10 +109,8 @@ def c_smooth(common_object,var,radius):
 def get_starting_targets(common_object,curve_vort_smooth): #,lon_index_west, lat_index_south, lon_index_east, lat_index_north):
 
 	if not torch.cuda.is_available() or str(common_object.device) == "cpu":
-		np = numpy
 		from skimage.feature import peak_local_max
 	else:
-		np = cupy
 		from cucim.skimage.feature import peak_local_max
 
 	# get a list of indices (lat/lon index pairs) of local maxima in the smoothed curvature vorticity field
@@ -120,13 +118,13 @@ def get_starting_targets(common_object,curve_vort_smooth): #,lon_index_west, lat
 
 	if torch.cuda.is_available() and str(common_object.device) != "cpu":
 		# moves CuPy array from GPU to CPU NumPy array
-		max_indices = max_indices.get()
+		max_indices = cupy.asnumpy(max_indices)
 
 	# get a list of weighted averaged lat/lon index pairs
 	weighted_max_indices = get_mass_center(common_object,curve_vort_smooth,max_indices)
 	# weighted_max_indices is a list and lives on CPU
 	# Convert each (array, array) tuple into a (float, float) tuple
-	weighted_max_indices = [(np.float32(lat), np.float32(lon)) for lat, lon in weighted_max_indices]
+	weighted_max_indices = [(numpy.float32(lat), numpy.float32(lon)) for lat, lon in weighted_max_indices]
 
 	# Remove duplicate locations. This checks to see if new starting targets actually belong to existing tracks.
 	# The 99999999 is the starting value for unique_loc_number; it just needs to be way bigger than the
@@ -184,7 +182,7 @@ def get_mass_center(common_object,var,max_indices): #,lat_index_south,lon_index_
 			var_crop = var[max_lat_index_minus_delta:max_lat_index_plus_delta,max_lon_index_minus_delta:max_lon_index_plus_delta].copy()
 		else:
 			# moves CuPy array from GPU to CPU NumPy array
-			var_crop = var[max_lat_index_minus_delta:max_lat_index_plus_delta,max_lon_index_minus_delta:max_lon_index_plus_delta].get()
+			var_crop = cupy.asnumpy(var[max_lat_index_minus_delta:max_lat_index_plus_delta,max_lon_index_minus_delta:max_lon_index_plus_delta])
 		lat_crop = common_object.lat[max_lat_index_minus_delta:max_lat_index_plus_delta,max_lon_index_minus_delta:max_lon_index_plus_delta]
 		lon_crop = common_object.lon[max_lat_index_minus_delta:max_lat_index_plus_delta,max_lon_index_minus_delta:max_lon_index_plus_delta]
 
@@ -362,10 +360,8 @@ def unique_track_locations(current_latlon_pair,combined_unique_max_locs,radius):
 def get_multi_positions(common_object,curve_vort_smooth,rel_vort_smooth,unique_max_locs):
 
 	if not torch.cuda.is_available() or str(common_object.device) == "cpu":
-		np = numpy
 		from skimage.feature import peak_local_max
 	else:
-		np = cupy
 		from cucim.skimage.feature import peak_local_max
 
 	# create a variable list that contains the smoothed curvature vorticity and the relative vorticity
@@ -388,7 +384,7 @@ def get_multi_positions(common_object,curve_vort_smooth,rel_vort_smooth,unique_m
 			new_max_indices = peak_local_max(var_list[var_number][p_level,common_object.lat_index_south:common_object.lat_index_north+1,common_object.lon_index_west:common_object.lon_index_east+1], min_distance=1, exclude_border=True) # indices come out ordered lat, lon
 			if torch.cuda.is_available() and str(common_object.device) != "cpu":
 				# moves CuPy array from GPU to CPU NumPy array
-				new_max_indices = new_max_indices.get()
+				new_max_indices = cupy.asnumpy(new_max_indices)
 			# go through all of the unique locations of local maxima from unique_max_locs
 			# check to see if the lat/lon pairs in new_max_indices are with the radius of the unique locations
 			# only keep the locations in new_max_indices that are within the radius of the location from unique_max_locs
@@ -412,7 +408,7 @@ def get_multi_positions(common_object,curve_vort_smooth,rel_vort_smooth,unique_m
 	# the value for unique_loc_number doesn't decrease anymore.
 	# First check to make sure the list has more than one lat/lon point. If it doesn't, then just return list without using the unique_locations function.
 	if len([item for sublist in new_weighted_max_indices_list for item in sublist])>1:
-		unique_max_locs = unique_locations([(np.float32(lat), np.float32(lon)) for sublist in new_weighted_max_indices_list for lat, lon in sublist],550.,99999999) # radius set at 350 km (from Albany)
+		unique_max_locs = unique_locations([(numpy.float32(lat), numpy.float32(lon)) for sublist in new_weighted_max_indices_list for lat, lon in sublist],550.,99999999) # radius set at 350 km (from Albany)
 	else:
 		unique_max_locs = [item for sublist in new_weighted_max_indices_list for item in sublist]
 
@@ -424,7 +420,7 @@ def get_multi_positions(common_object,curve_vort_smooth,rel_vort_smooth,unique_m
 # The function takes the common_object, the variabile (curvature or relative vorticity), the exisiting max_loc, and
 # a list of new lat/lon indices as parameters and returns the weighted lat/lon indices.
 def is_maxima(common_object,var,max_loc,new_max_indices):
-	np = numpy
+	
 	# this is a list for all the lat/lon pairs that are close to the max_loc location
 	max_indices_near_max_loc = []
 	# loop through all the possible new local maxima locations and find the ones that are close to the max_loc location
@@ -466,9 +462,9 @@ def assign_magnitude(common_object, curve_vort_smooth, rel_vort_smooth, lat_lon_
 
 	# the magnitude is whatever is largest, curvature or relative voriticy at 850., 700., 600. or 700., 600., respectively
 	if torch.cuda.is_available() and str(common_object.device) != "cpu":
-		magnitude = max(curve_vort_smooth[0,lat_index,lon_index].get(),curve_vort_smooth[1,lat_index,lon_index].get(),curve_vort_smooth[2,lat_index,lon_index].get(), rel_vort_smooth[1,lat_index,lon_index].get(), rel_vort_smooth[2,lat_index,lon_index].get())
+		magnitude = max(cupy.asnumpy(curve_vort_smooth[0,lat_index,lon_index]), cupy.asnumpy(curve_vort_smooth[1,lat_index,lon_index]), cupy.asnumpy(curve_vort_smooth[2,lat_index,lon_index]), cupy.asnumpy(rel_vort_smooth[1,lat_index,lon_index]), cupy.asnumpy(rel_vort_smooth[2,lat_index,lon_index]))
 	else:
-		magnitude = max(curve_vort_smooth[0,lat_index,lon_index],curve_vort_smooth[1,lat_index,lon_index],curve_vort_smooth[2,lat_index,lon_index], rel_vort_smooth[1,lat_index,lon_index], rel_vort_smooth[2,lat_index,lon_index])
+		magnitude = max(curve_vort_smooth[0,lat_index,lon_index], curve_vort_smooth[1,lat_index,lon_index], curve_vort_smooth[2,lat_index,lon_index], rel_vort_smooth[1,lat_index,lon_index], rel_vort_smooth[2,lat_index,lon_index])
 	return torch.as_tensor(magnitude)
 
 # This purpose of this function is to catch and filter out any "tracks" that don't make sense for actual
@@ -567,9 +563,9 @@ def circle_avg_m_point(common_object,var,lat_lon_pair):
 
 			if torch.cuda.is_available() and str(common_object.device) != "cpu":
 				# moves CuPy array from GPU to CPU NumPy array
-				var_crop = var[lat_index_maxima+radius_index,cyclic_lon_index].get()
+				var_crop = cupy.asnumpy(var[lat_index_maxima+radius_index,cyclic_lon_index])
 			else:
-				var_crop = var[lat_index_maxima+radius_index,cyclic_lon_index].copy()
+				var_crop = var[lat_index_maxima+radius_index,cyclic_lon_index]
 
 			tempv = tempv + (cos_lat * var_crop)
 			divider = divider + cos_lat
