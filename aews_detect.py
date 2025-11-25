@@ -117,10 +117,10 @@ class Tracking(torch.nn.Module):
       # originally lat array goes from north to south
       # (so 90, 89, 88, .....-88, -89, -90)
       # flip makes the lat array go from south to north
-      t_lat = torch.as_tensor(self.input_coords()["lat"], device=self.config.device, dtype=torch.float32).flip(0)
+      t_lat = torch.as_tensor(self.input_coords()["lat"], device="cpu", dtype=torch.float32).flip(0)
       # originally lon array goes from 0-360 degress
       # make the longitude go from -180 to 180 degrees
-      t_lon = torch.as_tensor(self.input_coords()["lon"], device=self.config.device, dtype=torch.float32) - 180.0
+      t_lon = torch.as_tensor(self.input_coords()["lon"], device="cpu", dtype=torch.float32) - 180.0
 
       # delta lon and delta lat
       self.config.dlon = torch.deg2rad(torch.abs(t_lon[2] - t_lon[1]))
@@ -190,7 +190,10 @@ class Tracking(torch.nn.Module):
       v: torch.Tensor,
     ) -> torch.Tensor:
       # convert static lat to tensor on same device
-      lat = torch.as_tensor(self.config.lat[:, 0], device=self.config.device)
+      if torch.cuda.is_available() and str(self.config.device) != "cpu":
+         lat = torch.as_tensor(self.config.lat_gpu[:, 0], device=self.config.device)
+      else:
+         lat = torch.as_tensor(self.config.lat[:, 0], device=self.config.device)
 
       # calculate dx by multiplying dlon by the radius of the Earth, 6367500m,
       # and the cos of the lat
@@ -225,7 +228,10 @@ class Tracking(torch.nn.Module):
       rel_vort: torch.Tensor,
    ) -> torch.Tensor:
       # convert static lat to tensor on same device
-      lat = torch.as_tensor(self.config.lat[:, 0], device=self.config.device)
+      if torch.cuda.is_available() and str(self.config.device) != "cpu":
+         lat = torch.as_tensor(self.config.lat_gpu[:, 0], device=self.config.device)
+      else:
+         lat = torch.as_tensor(self.config.lat[:, 0], device=self.config.device)
 
       # calculate dx by multiplying dlat by the radius of the Earth, 6367500m,
       # and the cos of the lat
