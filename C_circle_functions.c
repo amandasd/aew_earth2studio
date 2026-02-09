@@ -75,5 +75,3 @@ void circle_avg_m(int p_levels, int lat_dim, int lon_dim, float var[p_levels][la
 		}
 	}
 }
-
-}
