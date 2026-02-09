@@ -9,7 +9,7 @@ This example shows how to run the AEW tracker using **Earth2Studio**.
 1. Update the `uv` environment for this directory: `uv sync`, which will also install `earth2studio`
 1. Compile the helper code
 ```
-cc -shared -Wl,-soname,C_circle_functions -o C_circle_functions.so -fPIC C_circle_functions.c
+cc -shared -Wl,-soname,C_circle_functions -fopenmp -o C_circle_functions.so -fPIC C_circle_functions.c
 ```
 
 ## ARCO data source
