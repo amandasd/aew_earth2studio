@@ -32,7 +32,7 @@ void circle_avg_m(int p_levels, int lat_dim, int lon_dim, float var[p_levels][la
 		for(int lat_index=lat_index_south; lat_index<lat_index_north; lat_index++) {  // latitude loop
 
             float lat1, lat2, angle_rad, cos_lat;
-		    int lat_r, lon_gridpts, cyclic_lon_inde;
+		    int lat_r, lon_gridpts, cyclic_lon_index;
     	    float tempv[p_levels], divider[p_levels];
 			memset(tempv, 0.0, sizeof(tempv));
 			memset(divider, 0.0, sizeof(divider));
